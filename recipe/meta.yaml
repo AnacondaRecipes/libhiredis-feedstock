@@ -1,6 +1,5 @@
 {% set name = "libhiredis" %}
 {% set version = "1.3.0" %}
-{% set soversion = "1.3.0" %}
 
 package:
   name: {{ name|lower }}
@@ -10,41 +9,47 @@ source:
   url: https://github.com/redis/hiredis/archive/v{{ version }}.tar.gz
   sha256: 25cee4500f359cf5cad3b51ed62059aadfc0939b05150c1f19c7e2829123631c
   patches:
-    - hiredis-1.1.0-disable-network-tests.patch
+    - patches/hiredis-1.1.0-disable-network-tests.patch
 
 build:
-  number: 1
-  skip: true  # [win and int(float(vc)) < 14]
+  number: 0
   run_exports:
     - {{ pin_subpackage('libhiredis', max_pin='x.x') }}
 
 requirements:
   build:
+    - patch  # [not win]
+    - m2-patch  # [win]
     - {{ compiler('c') }}
-    - {{ stdlib("c") }}
     - {{ compiler('cxx') }}
     - cmake
     - make  # [unix]
-
   host:
-    - msinttypes  # [win and int(float(vc)) < 14]
+    - msinttypes r26  # [win]
 
 test:
   commands:
     - ldd ${PREFIX}/lib/libhiredis.so  # [linux]
     - test -f ${PREFIX}/include/hiredis/hiredis.h  # [unix]
-    - test -f ${PREFIX}/lib/libhiredis.{{ soversion }}${SHLIB_EXT}  # [osx]
+    - test -f ${PREFIX}/lib/libhiredis.{{ version }}${SHLIB_EXT}  # [osx]
     - if not exist %PREFIX%\\Library\\include\\hiredis\\hiredis.h exit 1  # [win]
-    - echo "TODO - Pkg tests require redis server."
 
 about:
-  home: http://github.com/redis/hiredis
+  home: https://github.com/redis/hiredis
+  summary: Hiredis is a minimalistic C client library for the Redis database.
   license: BSD-3-Clause
   license_family: BSD
   license_file: COPYING
-  summary: Minimalistic C client for Redis >= 1.2
-
+  description: |
+    Hiredis is a minimalistic C client library for the Redis database.
+    It is minimalistic because it just adds minimal support for the protocol, but at the same time it uses a high level printf-alike API in order
+    to make it much higher level than otherwise suggested by its minimal code base and the lack of explicit bindings for every Redis command.
+    Apart from supporting sending commands and receiving replies, it comes with a reply parser that is decoupled from the I/O layer. 
+    It is a stream parser designed for easy reusability, which can for instance be used in higher level language bindings for efficient reply parsing.
+    Hiredis only supports the binary-safe Redis protocol, so you can use it with any Redis version >= 1.2.0.
+    The library comes with multiple APIs. There is the synchronous API, the asynchronous API and the reply parsing API.
   dev_url: https://github.com/redis/hiredis
+  doc_url: https://github.com/redis/hiredis/blob/master/README.md
 
 extra:
   recipe-maintainers:
