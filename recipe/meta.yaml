@@ -12,14 +12,13 @@ source:
     - patches/hiredis-1.1.0-disable-network-tests.patch
 
 build:
-  number: 0
+  number: 1
   run_exports:
     - {{ pin_subpackage('libhiredis', max_pin='x.x') }}
 
 requirements:
   build:
     - patch  # [not win]
-    - m2-patch  # [win]
     - {{ compiler('c') }}
     - {{ compiler('cxx') }}
     - cmake
